@@ -1,0 +1,16 @@
+{
+     "compilerOptions": {
+        "allowJs": true,
+        "build": true,
+        "target": "es6",
+        "module": "commonjs",
+        "rootDir": "src",
+        "outDir": "dist",
+        "strict": true,
+        "sourceMap": true,
+        "watch": true,
+        "strictPropertyInitialization": false //!
+    },
+
+   "compileOnSave": true
+}
