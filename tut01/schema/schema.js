@@ -32,6 +32,7 @@ const RootQuery = new GraphQLObjectType({
 			args: { id: { type: GraphQLID } },
 			resolve(parent, args) {
 				// code to get data from db / other source - this is resolver
+				console.log(typeof(args.id)); // the type is actually string
 				return _.find(books, { id: args.id });
 			}
 		}
