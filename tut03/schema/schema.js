@@ -98,6 +98,17 @@ module.exports = new GraphQLSchema({
 /*
 
 query {
+  book(id: 3) {
+    name
+    genre
+    author {
+      name
+      age
+    }
+  }
+}
+
+query {
   author(id: 3) {
     name
     age
