@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-typescript-express-apollo-graphql-starter",
+  "name": "graphQL07",
   "version": "1.0.0",
-  "description": "NodeJS Apollo server with Typescript, express and GraphQL",
+  "description": "",
   "main": "src/app.js",
   "scripts": {
     "start": "node ./dist/app.js",
@@ -11,10 +11,8 @@
     "nodejs",
     "typescript",
     "graphql",
-    "apollo",
     "express"
   ],
-  "author": "Thomas Guibert",
   "license": "ISC",
   "devDependencies": {
     "@types/compression": "0.0.36",
