@@ -1,10 +1,5 @@
 import express from 'express';
-import { ApolloServer, gql } from 'apollo-server-express';
-import { createServer } from 'http';
-import compression from 'compression';
-import cors from 'cors';
 import { GraphQLResolveInfo } from 'graphql';
-import { IResolvers } from 'graphql-tools';
 import graphqlHTTP from 'express-graphql';
 import { buildSchema } from 'graphql';
 
