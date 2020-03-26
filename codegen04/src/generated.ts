@@ -12,8 +12,8 @@ export type Scalars = {
 //     __typename?: 'Query',
 //     user?: Maybe<Scalars['String']>,
 // };
-
-
+//
+//
 // export type QueryUserArgs = {
 //     id: Scalars['Int']
 // };
