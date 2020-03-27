@@ -15,7 +15,13 @@ const users: Array<User> = [
 
 const resolvers = {
     user(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-       return _.filter(users, user => user.id === parent.id)[0].name;
+        try {
+            return _.filter(users, user => user.id === parent.id)[0]?.name;
+        }
+        catch (err) {
+            console.log(`Error in \"user\" resolver: ${err}`);
+            return null;
+        }
     }
 };
 
