@@ -11,10 +11,11 @@ const strSchema = `
   }
 `;
 
-export type User = getTypeFromSchema(strSchema, 'User');
+const user = getTypeObjFromSchema(strSchema, 'User');
+export type User = typeof user;
 export const schema = buildSchema(strSchema);
 
-function getTypeFromSchema(strSchema: string, typeName: string): any {
+function getTypeObjFromSchema(strSchema: string, typeName: string): any {
     let generatedSchema = parse(strSchema);
     let theTypeObj: any;
     for (let i = 0; i < generatedSchema.definitions.length; i++) {

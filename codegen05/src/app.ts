@@ -11,6 +11,7 @@ const users: Array<User> = [
   { id: 2, name: 'Moshe Sharett' },
   { id: 3, name: 'Levi Eshkol' },
   { id: 4, name: 'Golda Meir' },
+  { id: 5, name: 'Menahem Begin' },
 ];
 
 const resolvers = {
