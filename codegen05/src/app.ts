@@ -2,9 +2,9 @@ import express from 'express';
 import _ from 'lodash';
 import compression from 'compression';
 import cors from 'cors';
-import { GraphQLResolveInfo, buildSchema, GraphQLSchema, printSchema, parse } from 'graphql';
+import { GraphQLResolveInfo/*, buildSchema, GraphQLSchema, printSchema, parse*/ } from 'graphql';
 import graphqlHTTP from 'express-graphql';
-import { User, schema } from './generate';
+import { User, schema, resolverNames, ResolverMap/*, ResolverFn*/ } from './generate';
 
 const users: Array<User> = [
   { id: 1, name: 'David Ben-Gurion' },
@@ -14,17 +14,7 @@ const users: Array<User> = [
   { id: 5, name: 'Menahem Begin' },
 ];
 
-const resolvers = {
-    user(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-        try {
-            return _.filter(users, user => user.id === parent.id)[0]?.name;
-        }
-        catch (err) {
-            console.log(`Error in \"user\" resolver: ${err}`);
-            return null;
-        }
-    }
-};
+const resolvers: ResolverMap = { }; 
 
 const app = express();
 
@@ -40,6 +30,34 @@ app.use('/graphql', graphqlHTTP({
 app.listen({ port: 3000 }, (): void =>
   console.log(`\n\t --- GraphQL is running on http://localhost:3000/graphql`)
 );
+
+// const resolvers: ResolverMap = {
+//     getUserById(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
+//         try {
+//             return _.filter(users, user => user.id === parent.id)[0]?.name;
+//         }
+//         catch (err) {
+//             console.log(`Error in \"user\" resolver: ${err}`);
+//             return null;
+//         }
+//     }
+// };
+for (let i = 0; i < resolverNames.length; i++) {
+  switch (resolverNames[i]) {
+    case 'getUserById':
+      resolvers[`${resolverNames[i]}`] = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+        try {
+            return _.filter(users, user => user.id === parent.id)[0]?.name;
+        }
+        catch (err) {
+            console.log(`Error in \"user\" resolver: ${err}`);
+            return null;
+        }
+      }
+      break;
+  }
+}   
+
 
 /* Postman - HTTP POST
 
