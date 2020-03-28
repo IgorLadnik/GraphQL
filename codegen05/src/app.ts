@@ -66,7 +66,7 @@ http://localhost:3000/graphql
 Body -> GraphQL:
 
 query {
-  user(id: 2)
+  getUserById(id: 5)
 }
 
 */
