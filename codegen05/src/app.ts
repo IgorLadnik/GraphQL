@@ -58,6 +58,13 @@ for (let i = 0; i < resolverNames.length; i++) {
   }
 }   
 
+/* GraphiQL 
+
+query {
+  getUserById(id: 5)
+}
+
+*/
 
 /* Postman - HTTP POST
 
