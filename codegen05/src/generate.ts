@@ -13,7 +13,12 @@ const strSchema = `
 `;
 
 const user = GqlSchemaParser.getTypeObjFromSchema(strSchema, 'User');
-export type User = typeof user;
+type TypeUser = typeof user;
 export const schema = buildSchema(strSchema);
 
 export const resolverNames = GqlSchemaParser.parseQueryFields(GqlSchemaParser.getTypeObjFromSchema(strSchema, 'Query'));
+
+export class User implements TypeUser {
+  id: number;
+  name: string;
+} 

@@ -12,7 +12,8 @@ const users: Array<User> = [
   { id: 2, name: 'Moshe Sharett' },
   { id: 3, name: 'Levi Eshkol' },
   { id: 4, name: 'Golda Meir' },
-  { id: 5, name: 'Menahem Begin' },
+  { id: 5, name: 'Yitzhak Rabin' },
+  { id: 6, name: 'Menachem Begin' }
 ];
 
 const resolvers: ResolverMap = { }; 
