@@ -2,21 +2,8 @@ import express from 'express';
 import _ from 'lodash';
 import compression from 'compression';
 import cors from 'cors';
-import { GraphQLResolveInfo/*, buildSchema, GraphQLSchema, printSchema, parse*/ } from 'graphql';
 import graphqlHTTP from 'express-graphql';
-import { User, schema, resolverNames } from './generate';
-import { ResolverMap } from './gqlSchemaParser'
-
-const users: Array<User> = [
-  { id: 1, name: 'David Ben-Gurion' },
-  { id: 2, name: 'Moshe Sharett' },
-  { id: 3, name: 'Levi Eshkol' },
-  { id: 4, name: 'Golda Meir' },
-  { id: 5, name: 'Yitzhak Rabin' },
-  { id: 6, name: 'Menachem Begin' }
-];
-
-const resolvers: ResolverMap = { }; 
+import { resolvers, schema } from './generate';
 
 const app = express();
 
@@ -29,36 +16,16 @@ app.use('/graphql', graphqlHTTP({
   graphiql: true,
 }));
 
-app.listen({ port: 3000 }, (): void =>
-  console.log(`\n\t --- GraphQL is running on http://localhost:3000/graphql`)
-);
+let port = 3000;
+let address = `http://localhost:${port}/graphql`;
+listen(app, port).then(resolve => console.log(`\n*** GraphQL is running on ${address}`),
+                       reject => console.log(`\n*** Error to listen on ${address}. ${reject}`));
 
-// const resolvers: ResolverMap = {
-//     getUserById(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-//         try {
-//             return _.filter(users, user => user.id === parent.id)[0]?.name;
-//         }
-//         catch (err) {
-//             console.log(`Error in \"user\" resolver: ${err}`);
-//             return null;
-//         }
-//     }
-// };
-for (let i = 0; i < resolverNames.length; i++) {
-  switch (resolverNames[i]) {
-    case 'getUserById':
-      resolvers[`${resolverNames[i]}`] = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-        try {
-            return _.filter(users, user => user.id === parent.id)[0]?.name;
-        }
-        catch (err) {
-            console.log(`Error in \"user\" resolver: ${err}`);
-            return null;
-        }
-      }
-      break;
-  }
-}   
+async function listen(app: any, port: number) {
+  await app.listen(port);
+}
+
+
 
 /* GraphiQL 
 
