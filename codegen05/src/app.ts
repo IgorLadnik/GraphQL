@@ -4,7 +4,8 @@ import compression from 'compression';
 import cors from 'cors';
 import { GraphQLResolveInfo/*, buildSchema, GraphQLSchema, printSchema, parse*/ } from 'graphql';
 import graphqlHTTP from 'express-graphql';
-import { User, schema, resolverNames, ResolverMap/*, ResolverFn*/ } from './generate';
+import { User, schema, resolverNames } from './generate';
+import { ResolverMap } from './gqlSchemaParser'
 
 const users: Array<User> = [
   { id: 1, name: 'David Ben-Gurion' },
