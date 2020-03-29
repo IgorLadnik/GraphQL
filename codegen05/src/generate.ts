@@ -33,8 +33,6 @@ type User = typeof userTypeObject;
 
 export const resolvers: ResolverMap = { }; 
 
-AddResolvers(query.fieldNames, resolvers);
-
 // // TEMP
 // export class User implements TypeUser {
 //   id: number;
@@ -68,4 +66,8 @@ function AddResolvers(resolverNames: Array<string>, resolvers: ResolverMap) {
         break;
     }
   } 
+}
+
+export function AddResolversAfterStartListening() {
+  AddResolvers(query.fieldNames, resolvers);
 }

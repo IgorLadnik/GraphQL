@@ -3,7 +3,7 @@ import _ from 'lodash';
 import compression from 'compression';
 import cors from 'cors';
 import graphqlHTTP from 'express-graphql';
-import { resolvers, schema } from './generate';
+import { resolvers, schema, AddResolversAfterStartListening } from './generate';
 
 const app = express();
 
@@ -18,8 +18,14 @@ app.use('/graphql', graphqlHTTP({
 
 let port = 3000;
 let address = `http://localhost:${port}/graphql`;
-listen(app, port).then(resolve => console.log(`\n*** GraphQL is running on ${address}`),
-                       reject => console.log(`\n*** Error to listen on ${address}. ${reject}`));
+listen(app, port)
+  .then(
+    () => {
+      console.log(`\n--- GraphQL is running on ${address}`);
+      AddResolversAfterStartListening();
+    },
+    reject => console.log(`\n*** Error to listen on ${address}. ${reject}`)
+  );
 
 async function listen(app: any, port: number) {
   await app.listen(port);
