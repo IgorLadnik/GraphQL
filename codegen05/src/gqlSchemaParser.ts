@@ -14,20 +14,20 @@ export class GqlSchemaParserResult {
 }
 
 export class GqlSchemaParser {
-    public schema: GraphQLSchema;
-    public results = new Array<GqlSchemaParserResult>(); 
+    public readonly schema: GraphQLSchema;
+    public readonly resolvers: ResolverMap = { };
+    private readonly results = new Array<GqlSchemaParserResult>();
 
     constructor(strSchema: string) {
         this.schema = buildSchema(strSchema);
         let generatedSchema = parse(strSchema);
-        let theTypeObj: any;
         for (let i = 0; i < generatedSchema.definitions.length; i++) {
-            theTypeObj = generatedSchema.definitions[i];
-            let result = new GqlSchemaParserResult();
-            result.name = theTypeObj.name.value;
-            result.object = theTypeObj;
-            result.fieldNames = GqlSchemaParser.parseQueryFields(theTypeObj);
-            this.results.push(result);
+            let theTypeObj: any = generatedSchema.definitions[i];
+            this.results.push({
+                name: theTypeObj.name.value,
+                object: theTypeObj,
+                fieldNames: GqlSchemaParser.parseQueryFields(theTypeObj)
+            });
         }
     }
 
@@ -41,6 +41,18 @@ export class GqlSchemaParser {
         return resolverNames;
     }
 
-    public getObjectByTypeName = (typeName: string): GqlSchemaParserResult =>
+    getObjectByTypeName = (typeName: string): GqlSchemaParserResult =>
         _.filter(this.results, r => r.name === typeName)[0];
+
+    addResolver(resolverName: string, fn: Function) {
+        this.resolvers[resolverName] = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+            try {
+                return fn(parent, args, context, info);
+            }
+            catch (err) {
+                console.log(`Error in resolver \"${resolverName}\": ${err}`);
+                return null;
+            }
+        }
+    }
 }

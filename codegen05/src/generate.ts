@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { GraphQLResolveInfo } from 'graphql';
-import { GqlSchemaParser, ResolverMap } from './gqlSchemaParser'
+import { GqlSchemaParser } from './gqlSchemaParser'
 
 const strSchema = `
   type User {
@@ -23,51 +23,22 @@ const users: Array<User> = [
   { id: 6, name: 'Menachem Begin' }
 ];
 
-const gqlSchemaParser = new GqlSchemaParser(strSchema);
-export const schema = gqlSchemaParser.schema;
+export const gqlSchemaParser = new GqlSchemaParser(strSchema);
 
 let userTypeObject = gqlSchemaParser.getObjectByTypeName('User').object;
 let query = gqlSchemaParser.getObjectByTypeName('Query');
 
 type User = typeof userTypeObject;
 
-export const resolvers: ResolverMap = { }; 
-
-// // TEMP
+//type TypeUser = typeof userTypeObject;
 // export class User implements TypeUser {
 //   id: number;
 //   name: string;
-// } 
-
-function AddResolvers(resolverNames: Array<string>, resolvers: ResolverMap) {
-  // const resolvers: ResolverMap = {
-  //     getUserById(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-  //         try {
-  //             return _.filter(users, user => user.id === parent.id)[0]?.name;
-  //         }
-  //         catch (err) {
-  //             console.log(`Error in \"user\" resolver: ${err}`);
-  //             return null;
-  //         }
-  //     }
-  // };
-  for (let i = 0; i < resolverNames.length; i++) {
-    switch (resolverNames[i]) {
-      case 'getUserById':
-        resolvers[`${resolverNames[i]}`] = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-          try {
-              return _.filter(users, user => user.id === parent.id)[0]?.name;
-          }
-          catch (err) {
-              console.log(`Error in \"user\" resolver: ${err}`);
-              return null;
-          }
-        }
-        break;
-    }
-  } 
-}
+// }
 
 export function AddResolversAfterStartListening() {
-  AddResolvers(query.fieldNames, resolvers);
+  gqlSchemaParser.addResolver(query.fieldNames[0],
+      (parent: any, args: any, context: any, info: GraphQLResolveInfo) =>
+          _.filter(users, user => user.id === parent.id)[0]?.name
+  );
 }

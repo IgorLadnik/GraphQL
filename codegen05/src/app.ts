@@ -1,9 +1,8 @@
 import express from 'express';
-import _ from 'lodash';
 import compression from 'compression';
 import cors from 'cors';
 import graphqlHTTP from 'express-graphql';
-import { resolvers, schema, AddResolversAfterStartListening } from './generate';
+import { gqlSchemaParser, AddResolversAfterStartListening } from './generate';
 
 const app = express();
 
@@ -11,8 +10,8 @@ app.use('*', cors());
 app.use(compression());
 
 app.use('/graphql', graphqlHTTP({
-  schema,
-  rootValue: resolvers,
+  schema: gqlSchemaParser.schema,
+  rootValue: gqlSchemaParser.resolvers,
   graphiql: true,
 }));
 
@@ -30,7 +29,6 @@ listen(app, port)
 async function listen(app: any, port: number) {
   await app.listen(port);
 }
-
 
 
 /* GraphiQL 
