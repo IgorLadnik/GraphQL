@@ -2,16 +2,53 @@ import { parse, buildSchema, GraphQLSchema } from "graphql";
 import { Types } from "@graphql-codegen/plugin-helpers";
 import * as typescriptPlugin from "@graphql-codegen/typescript";
 import { codegen } from "@graphql-codegen/core";
+import { TypeScriptSimple } from "typescript-simple";
+import ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
+
+const tsCodePostProcessing = `
+function tsCodePostProcessing() {
+    class Query {
+      getUserById: string;
+      constructor(getUserById) {
+        this.getUserById = getUserById;
+      }
+    };
+
+    class QueryGetUserByIdArgs {
+      id: number;
+      constructor(id) {
+        this.id = id;
+      }
+    };
+
+    class User {  
+      id: number;
+      name: string;
+      constructor(id, name) {
+        this.id = id;
+        this.name = name;
+      }
+    };
+
+    return { Query, QueryGetUserByIdArgs, User };
+}
+`;
+
 
 export class GqlSchemaParser {
     readonly schema: GraphQLSchema;
     readonly config: Types.GenerateOptions;
 
-    private generatedModuleText: string;
+    generatedTsCode: string;
+    postProcessedTsCode: string;
+    jsCode: string;
+    generatedClasses: any;
 
-    constructor(str: string) {
+    private readonly strSchema: string;
+
+    constructor(str: string, private isOutputToFile: boolean = false) {
         let strSchema = str;
         let outputFile = `generated-schema.ts`;
 
@@ -20,6 +57,8 @@ export class GqlSchemaParser {
             outputFile = GqlSchemaParser.getOutputFileName(str);
         }
         catch { }
+
+        this.strSchema = strSchema;
 
         this.schema = buildSchema(strSchema);
         this.config = {
@@ -43,18 +82,56 @@ export class GqlSchemaParser {
         };
     }
 
-    async generate(): Promise<GqlSchemaParser> {
+    async processSchema(): Promise<GqlSchemaParser> {
+        this.generateInitTsCode();
+        console.log(`\nInitial Generated TS Code\n======================\n${this.generatedTsCode}\n======================\n`);
+
+        // generatedTsCode --> postProcessedTsCode
+        this.tsCodePostProcessing();
+        this.postProcessedTsCode = tsCodePostProcessing; //TEMP before gqlSchemaParser.tsCodePostProcessing() will be implemented
+        console.log(`\nPost-processed TS Code\n======================\n${this.postProcessedTsCode}\n======================\n`);
+
+        // postProcessedTsCode --> jsCode
+        this.transpilation();
+        console.log(`\nJS Code\n======================\n${this.jsCode}\n======================\n`);
+
+        // jsCode --> generatedClasses
+        this.produceGeneratedClasses();
+
+        return this;
+    }
+
+    private async generateInitTsCode() {
         let genFile = path.join(this.config.filename);
 
         try {
-            this.generatedModuleText = await codegen(this.config);
-            fs.writeFileSync(genFile, this.generatedModuleText);
+            this.generatedTsCode = await codegen(this.config);
+
+            if (this.isOutputToFile)
+                fs.writeFileSync(GqlSchemaParser.getOutputFileName(genFile), this.generatedTsCode);
         }
         catch (err) {
             console.log(`ERROR in \"codegen\": ${err}`);
         }
+    }
 
-        return this;
+    // generatedTsCode --> postProcessedTsCode
+    private tsCodePostProcessing() {
+        // Not implemented yet
+    }
+
+    // jsCode --> generatedClasses
+    private transpilation() {
+        const tss = new TypeScriptSimple({ target: ts.ScriptTarget.ES2016 }, false);
+        this.jsCode = tss.compile(this.postProcessedTsCode);
+    }
+
+    // jsCode --> generatedClasses
+    private produceGeneratedClasses() {
+        const index = this.jsCode.indexOf('{');
+        const jsStrFn = this.jsCode.substring(index, this.jsCode.length);
+        let fn = new Function(jsStrFn);
+        this.generatedClasses = fn();
     }
 
     private static getOutputFileName = (fileName: string): string =>

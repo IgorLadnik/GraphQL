@@ -1,8 +1,23 @@
 import { GqlSchemaParser } from './gqlSchemaParser';
 
+// Input: GQL schema
+const inputStrSchema = `
+  type User {
+    id: Int!
+    name: String
+  }
+
+  type Query {
+    getUserById(id: Int!): String
+  }
+`;
+
+
 (async function main() {
-    const filePath = process.argv[2];
-    const gqlSchemaParser = await new GqlSchemaParser(filePath).generate();
+    const gqlSchemaParser = await new GqlSchemaParser(inputStrSchema).processSchema();
+
+    const user = new gqlSchemaParser.generatedClasses.User(139, 'myName');
+    console.log(`user -> ${user.id} ${user.name}`)
 })();
 
 /* GraphiQL
