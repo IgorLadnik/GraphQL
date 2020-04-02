@@ -11,28 +11,17 @@ const fs = require('fs');
 
 
 const tsCodePostProcessing = `
-function tsCodePostProcessing() {
+function tsCodePostProcessing(): Array<any> {
     class Query {
-      getUserById: string;
-      constructor(getUserById) {
-        this.getUserById = getUserById;
-      }
+      constructor(public getUserById: string) { }
     };
 
     class QueryGetUserByIdArgs {
-      id: number;
-      constructor(id) {
-        this.id = id;
-      }
+      constructor(public id: number) { }
     };
 
     class User {  
-      id: number;
-      name: string;
-      constructor(id, name) {
-        this.id = id;
-        this.name = name;
-      }
+      constructor(/** @type {number} */public id: number, public name: string) { }          
     };
 
     return [ Query, QueryGetUserByIdArgs, User ];
@@ -146,7 +135,15 @@ export class GqlSchemaParser {
 
     // postProcessedTsCode -> jsCode
     private transpilation() {
-        const tss = new TypeScriptSimple({ target: ts.ScriptTarget.ES2016 }, false);
+        const options = {
+            target: ts.ScriptTarget.ES2016,
+            useDefineForClassFields: true,
+            lib: ['ES6', 'ES2015.Core' ],
+            noImplicitAny: true,
+            allowJs: true,
+            checkJs: true
+        };
+        const tss = new TypeScriptSimple(options, false);
         this.currentCode = tss.compile(this.currentCode);
         this.outputResultToFile('.js', this.currentCode);
     }

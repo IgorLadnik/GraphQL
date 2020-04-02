@@ -25,7 +25,7 @@ const strSchema = `
     app.use(compression());
 
     const gqlSchemaParser = await new GqlSchemaParser(strSchema, false).processSchema();
-    let user = new gqlSchemaParser.generatedClasses[2](10, 'some-name'); //TEST
+    let user = new gqlSchemaParser.generatedClasses[2]('iouoiuio', 'some-name'); //TEST
 
     app.use('/graphql', graphqlHTTP({
         schema: gqlSchemaParser.schema,
