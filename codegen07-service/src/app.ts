@@ -24,7 +24,7 @@ const strSchema = `
     app.use('*', cors());
     app.use(compression());
 
-    const gqlSchemaParser = await new GqlSchemaParser(strSchema).processSchema();
+    const gqlSchemaParser = await new GqlSchemaParser(strSchema, false).processSchema();
     let user = new gqlSchemaParser.generatedClasses[2](10, 'some-name'); //TEST
 
     app.use('/graphql', graphqlHTTP({
