@@ -4,7 +4,6 @@ import * as typescriptPlugin from "@graphql-codegen/typescript";
 import { codegen } from "@graphql-codegen/core";
 import { TypeScriptSimple } from "typescript-simple";
 import { v4 as uuidv4 } from 'uuid';
-import _ from 'lodash';
 import ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
