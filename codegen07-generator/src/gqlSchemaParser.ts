@@ -90,16 +90,12 @@ export class GqlSchemaParser {
 
     async processSchema(): Promise<GqlSchemaParser> {
         this.generateInitTsCode();
-        //console.log(`\nInitial Generated TS Code\n======================\n${this.generatedTsCode}\n======================\n`);
 
         // generatedTsCode --> postProcessedTsCode
         this.tsCodePostProcessing();
-        //this.postProcessedTsCode = tsCodePostProcessing; //TEMP before gqlSchemaParser.tsCodePostProcessing() will be implemented
-        //console.log(`\nPost-processed TS Code\n======================\n${this.postProcessedTsCode}\n======================\n`);
 
         // postProcessedTsCode --> jsCode
         this.transpilation();
-        //console.log(`\nJS Code\n======================\n${this.jsCode}\n======================\n`);
 
         // jsCode --> generatedClasses
         this.produceGeneratedClasses();

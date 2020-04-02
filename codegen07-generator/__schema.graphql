@@ -1,8 +1,0 @@
-type User {
-    id: Int!
-    name: String
-}
-
-type Query {
-    getUserById(id: Int!): String
-}
