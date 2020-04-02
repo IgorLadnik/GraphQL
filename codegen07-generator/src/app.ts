@@ -12,9 +12,10 @@ const inputStrSchema = `
   }
 `;
 
+//const schemaFilePath = 'C:/prj/GraphQL/codegen07-generator/__schema.graphql';
 
 (async function main() {
-    const gqlSchemaParser = await new GqlSchemaParser(inputStrSchema).processSchema();
+    const gqlSchemaParser = await new GqlSchemaParser(inputStrSchema/*schemaFilePath*/, true).processSchema();
 
     const user = new gqlSchemaParser.generatedClasses.User(139, 'myName');
     console.log(`user -> ${user.id} ${user.name}`)

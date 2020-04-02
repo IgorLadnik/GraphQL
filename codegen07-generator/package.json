@@ -29,9 +29,11 @@
     "@graphql-codegen/typescript": "^1.13.1",
     "@types/lodash": "^4.14.149",
     "@types/node-fetch": "^2.5.5",
+    "@types/uuid": "^7.0.2",
     "graphql": "^14.5.8",
     "lodash": "^4.17.15",
     "ncp": "2.0.0",
-    "typescript-simple": "^8.0.6"
+    "typescript-simple": "^8.0.6",
+    "uuid": "^7.0.3"
   }
 }
