@@ -7,24 +7,41 @@ import { v4 as uuidv4 } from 'uuid';
 import ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
+const Module = require('module');
 
-
-const tsCodePostProcessing = `
-function tsCodePostProcessing(): Array<any> {
-    class Query {
-      constructor(public getUserById: string) { }
-    };
-
-    class QueryGetUserByIdArgs {
-      constructor(public id: number) { }
-    };
-
-    class User {  
-      constructor(/** @type {number} */public id: number, public name: string) { }          
-    };
-
-    return [ Query, QueryGetUserByIdArgs, User ];
-}
+const jsFinalCode = `
+    exports.jsCode = (workingDir) => {
+        const path = require('path');
+        const Something = require(path.join(workingDir, 'something')).Something;
+        
+        class Query {
+          getUserById;  
+          constructor(getUserById) {
+            this.getUserById = getUserById;
+          }
+        };
+    
+        class QueryGetUserByIdArgs {
+          id;
+          constructor(id) {
+            this.id = id;
+          }
+        };
+    
+        class User {  
+          id;
+          name;
+          constructor(id, name) { 
+            this.id = id;
+            this.name = name;     
+          }          
+        };
+        
+        const something = new Something(7).do();
+        console.log('from jsCode: something.n = ' + something.n);
+    
+        return [ Query, QueryGetUserByIdArgs, User ];
+    }
 `;
 
 export type ResolverFn = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => any;
@@ -41,8 +58,6 @@ export class GqlSchemaParser {
     private readonly config: Types.GenerateOptions;
     private readonly strSchema: string;
     private readonly filePathWithoutExt: string;
-
-    private currentCode: string;
 
     constructor(str: string, private isOutputToFile: boolean = false) {
         let strSchema = str;
@@ -86,16 +101,20 @@ export class GqlSchemaParser {
     }
 
     async processSchema(): Promise<GqlSchemaParser> {
-        this.generateInitTsCode();
+        // graphQL schema --> tsInitCode
+        let code = await this.generateInitTsCode();
 
-        // generatedTsCode --> postProcessedTsCode
-        this.tsCodePostProcessing();
+        // tsInitCode --> tsFinalCode
+        code = this.tsPostProcessing(code);
 
-        // postProcessedTsCode --> jsCode
-        this.transpilation();
+        // tsFinalCode --> jsInitCode
+        code = this.transpilation(code);
+
+        // jsInitCode -> jsFinalCode
+        code = this.jsPostProcessing(code);
 
         // jsCode --> generatedClasses
-        this.produceGeneratedClasses();
+        this.produceGeneratedClasses(code);
 
         return this;
     }
@@ -112,28 +131,35 @@ export class GqlSchemaParser {
         }
     }
 
-    private async generateInitTsCode() {
-        let genFile = path.join(this.config.filename);
-
+    // graphQL schema --> tsInitCode
+    private async generateInitTsCode(): Promise<string> {
+        this.outputResultToFile('.graphql', this.strSchema);
+        let outCode: string = '';
         try {
-            this.currentCode = await codegen(this.config);
-
-            this.outputResultToFile('.ts', this.currentCode);
+            outCode = await codegen(this.config);
+            this.outputResultToFile('-init.ts', outCode);
         }
         catch (err) {
             console.log(`ERROR in \"codegen\": ${err}`);
         }
+
+        return outCode;
     }
 
-    // generatedTsCode --> postProcessedTsCode
-    private tsCodePostProcessing() {
+    // tsInitCode --> tsFinalCode
+    private tsPostProcessing(code: string): string {
+        let outCode: string = '';
+
         // Not implemented yet
-        this.currentCode = tsCodePostProcessing; //TEMP before gqlSchemaParser.tsCodePostProcessing() will be implemented
-        this.outputResultToFile('-postprocessed.ts', this.currentCode);
+        outCode = code;
+
+        this.outputResultToFile('-final.ts', outCode);
+        return outCode;
     }
 
-    // postProcessedTsCode -> jsCode
-    private transpilation() {
+    // tsFinalCode --> jsInitCode
+    private transpilation(code: string): string {
+        let outCode: string = '';
         const options = {
             target: ts.ScriptTarget.ES2016,
             useDefineForClassFields: true,
@@ -143,16 +169,46 @@ export class GqlSchemaParser {
             checkJs: true
         };
         const tss = new TypeScriptSimple(options, false);
-        this.currentCode = tss.compile(this.currentCode);
-        this.outputResultToFile('.js', this.currentCode);
+
+        try {
+            outCode = tss.compile(code);
+        }
+        catch (err) {
+            console.log(`ERROR in transpilation: ${err}`);
+        }
+
+        this.outputResultToFile('-init.js', outCode);
+        return outCode;
     }
 
-    // jsCode --> generatedClasses
-    private produceGeneratedClasses() {
-        const index = this.currentCode.indexOf('{');
-        const jsStrFn = this.currentCode.substring(index, this.currentCode.length);
-        let fn = new Function(jsStrFn);
-        this.generatedClasses = fn();
+    // jsInitCode --> jsFinalCode
+    private jsPostProcessing(code: string): string {
+        let outCode: string = '';
+
+        // Not implemented yet
+        outCode = jsFinalCode;
+
+        this.outputResultToFile('-final.js', outCode);
+        return outCode;
+    }
+
+    // jsFinalCode --> generatedClasses
+    private produceGeneratedClasses(code: string) {
+        let m = new Module();
+
+        try {
+            m._compile(code, '');
+        }
+        catch (err) {
+            console.log(`ERROR in module compilation: ${err}`);
+        }
+
+        try {
+            this.generatedClasses = m.exports.jsCode(__dirname);
+        }
+        catch (err) {
+            console.log(`ERROR in jsCode execution: ${err}`);
+        }
     }
 
     private static getFileNameWithoutExt(filePath: string): string {

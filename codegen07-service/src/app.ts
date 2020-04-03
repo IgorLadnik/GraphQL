@@ -67,7 +67,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser) {
         new User(3, 'Benjamin Netanyahu')
     ];
 
-    var count: number = 0;
+    let count: number = 0;
 
     // Periodic change of resolver for a field
     setInterval(() => {
@@ -86,7 +86,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser) {
 /* GraphiQL 
 
 query {
-  getUserById(id: 5)
+  getUserById(id: 1)
 }
 
 */
@@ -98,7 +98,7 @@ http://localhost:3000/graphql
 Body -> GraphQL:
 
 query {
-  getUserById(id: 5)
+  getUserById(id: 1)
 }
 
 */

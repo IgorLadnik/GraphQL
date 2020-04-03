@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node dist/app.js",
-    "build": "tsc && ncp src/schema dist/schema"
+    "build": "tsc"
   },
   "keywords": [
     "nodejs",
