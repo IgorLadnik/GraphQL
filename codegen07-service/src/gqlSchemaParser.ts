@@ -4,6 +4,7 @@ import * as typescriptPlugin from "@graphql-codegen/typescript";
 import { codegen } from "@graphql-codegen/core";
 import { TypeScriptSimple } from "typescript-simple";
 import { v4 as uuidv4 } from 'uuid';
+import { CompilerOptions, ScriptTarget } from 'typescript-simple/node_modules/typescript/lib/typescript';
 import ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
@@ -160,10 +161,10 @@ export class GqlSchemaParser {
     // tsFinalCode --> jsInitCode
     private transpilation(code: string): string {
         let outCode: string = '';
-        const options = {
-            target: ts.ScriptTarget.ES2016,
+        const options: CompilerOptions = {
+            target: ScriptTarget.ES2016,
             useDefineForClassFields: true,
-            lib: ['ES6', 'ES2015.Core' ],
+            lib: ['ES6'],
             noImplicitAny: true,
             allowJs: true,
             checkJs: true
