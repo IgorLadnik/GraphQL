@@ -7,25 +7,80 @@ import {GraphQLResolveInfo} from "graphql";
 import _ from "lodash";
 
 const strSchema = `
-  type User {
-    id: Int!
-    name: String
-  }
+scalar Date
 
-  type Query {
-    getUserById(id: Int!): String
-  }
+schema {
+    query: Query
+}
+
+type Query {
+    me: User!
+    user(id: ID!): User
+    allUsers: [User]
+    search(term: String!): [SearchResult!]!
+    myChats: [Chat!]!
+}
+
+enum Role {
+    USER,
+    ADMIN,
+}
+
+interface Node {
+    id: ID!
+}
+
+union SearchResult = User | Chat | ChatMessage
+
+type User implements Node {
+    id: ID!
+    username: String!
+    email: String!
+    role: Role!
+}
+
+type Chat implements Node {
+    id: ID!
+    users: [User!]!
+    messages: [ChatMessage!]!
+}
+
+type ChatMessage implements Node {
+    id: ID!
+    content: String!
+    time: Date!
+    user: User!
+}
 `;
 
 (async function main()
 {
+
+    const gqlSchemaParser = await new GqlSchemaParser(strSchema, false).processSchema();
+    const classes = gqlSchemaParser.generatedClasses;
+
+    // Data ------------------------------------------------------------------------------------
+    const users = [
+        new classes.User(0, 'Julius Verne', 'jv@MysteriousIsland.com', classes.Role.Admin),
+        new classes.User(1, 'Cyrus Smith', 'cs@MysteriousIsland.com', classes.Role.Admin),
+        new classes.User(2, 'Gedeon Spilett', 'gs@MysteriousIsland.com', classes.Role.User),
+    ];
+
+    const chatMessages = [
+        new classes.ChatMessage(0, 'aaaaaaa', Date.parse('2020-04-05'), users[1]),
+        new classes.ChatMessage(1, 'bbbbbbb', Date.parse('2020-04-05'), users[2]),
+    ];
+
+    const chats = [
+        new classes.Chat(0, [users[0], users[2]], [chatMessages[0], chatMessages[1]]),
+        new classes.Chat(1, [users[1], users[0]], [chatMessages[0], chatMessages[1]]),
+    ];
+    // -----------------------------------------------------------------------------------------
+
     const app = express();
 
     app.use('*', cors());
     app.use(compression());
-
-    const gqlSchemaParser = await new GqlSchemaParser(strSchema, false).processSchema();
-    let user = new gqlSchemaParser.generatedClasses[2](10, 'some-name'); //TEST
 
     app.use('/graphql', graphqlHTTP({
         schema: gqlSchemaParser.schema,
@@ -40,7 +95,7 @@ const strSchema = `
         await listen(app, port);
         console.log(`\n--- GraphQL is running on ${address}`);
 
-        setResolversAfterStartListening(gqlSchemaParser);
+        setResolversAfterStartListening(gqlSchemaParser, users, chats, chatMessages);
     }
     catch (err) {
         console.log(`\n*** Error to listen on ${address}. ${err}`)
@@ -51,54 +106,53 @@ async function listen(app: any, port: number) {
   await app.listen(port);
 }
 
-function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser) {
-    const User = gqlSchemaParser.generatedClasses[2];
+function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
+                                         users: Array<any>, chats: Array<any>, chatMessages: Array<any>) {
+    const classes = gqlSchemaParser.generatedClasses;
+    const user = new classes.User(1, 'Moshe Levi', 'ml@mail.com', classes.Role.Admin);
 
-    // Temp. data source
-    const leftPMs = [
-        new User(1, 'David Ben-Gurion'),
-        new User(2, 'Moshe Sharett'),
-        new User(3, 'Golda Meir')
-    ];
-
-    const rightPMs = [
-        new User(1, 'Menachem Begin'),
-        new User(2, 'Yitzhak Shamir'),
-        new User(3, 'Benjamin Netanyahu')
-    ];
-
-    let count: number = 0;
-
-    // Periodic change of resolver for a field
-    setInterval(() => {
-        if (count > 10000)
-            count = 0;
-
-        let pms = count++ % 2 == 0 ? leftPMs : rightPMs;
-        gqlSchemaParser.setResolver('getUserById',
-            (parent: any, args: any, context: any, info: GraphQLResolveInfo) =>
-                _.filter(pms, pm => pm.id === parent.id)[0]?.name
-        )
-    }, 1000);
+    gqlSchemaParser.setResolvers(
+      { resolverName: 'me',
+        fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+            console.log('resolver: me');
+            return users[0];
+        }
+      },
+      {
+        resolverName: 'user',
+        fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+            //_.filter(pms, pm => pm.id === parent.id)[0]?.name
+            console.log(`resolver: user(${parent.id})`);
+            return users[parent.id];
+        }
+      },
+      {
+        resolverName: 'allUsers',
+        fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+            console.log('resolver: allUsers');
+            return users;
+        }
+      },
+      {
+        resolverName: 'search',
+        fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+            console.log(`resolver: parent.id = ${parent.term}`);
+            //const typeName = new classes.SearchResult(parent.term).resolveType();
+            let collection;
+            switch (parent.term.toLowerCase()) {
+                case 'users': collection = users; break;
+                case 'chats': collection = chats; break;
+                case 'chatmessages': collection = chatMessages;  break;
+            }
+            return collection;
+        }
+      },
+      {
+        resolverName: 'myChats',
+        fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+           console.log('resolver: myChats');
+           return chats; //TEMP
+        }
+      },
+    );
 }
-
-
-/* GraphiQL 
-
-query {
-  getUserById(id: 1)
-}
-
-*/
-
-/* Postman - HTTP POST
-
-http://localhost:3000/graphql
-
-Body -> GraphQL:
-
-query {
-  getUserById(id: 1)
-}
-
-*/

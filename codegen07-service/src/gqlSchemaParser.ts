@@ -5,44 +5,89 @@ import { codegen } from "@graphql-codegen/core";
 import { TypeScriptSimple } from "typescript-simple";
 import { v4 as uuidv4 } from 'uuid';
 import { CompilerOptions, ScriptTarget } from 'typescript-simple/node_modules/typescript/lib/typescript';
-import ts = require('typescript');
 const path = require('path');
 const fs = require('fs');
 const Module = require('module');
 
 const jsFinalCode = `
-    exports.jsCode = (workingDir) => {
-        const path = require('path');
-        const Something = require(path.join(workingDir, 'something')).Something;
-        
-        class Query {
-          getUserById;  
-          constructor(getUserById) {
-            this.getUserById = getUserById;
-          }
-        };
-    
-        class QueryGetUserByIdArgs {
-          id;
-          constructor(id) {
+exports.jsCode = (workingDir) => {
+   
+   class User {
+        __typename = 'User';
+        id;
+        username;
+        email;
+        role;
+        constructor(id, username, email, role) {
             this.id = id;
-          }
-        };
-    
-        class User {  
-          id;
-          name;
-          constructor(id, name) { 
+            this.username = username;
+            this.email = email;
+            this.role = role;
+        }
+    };
+
+    class Chat {
+        __typename = 'Chat';
+        id;
+        users;
+        messages;
+        constructor(id, users, messages) {
             this.id = id;
-            this.name = name;     
-          }          
-        };
-        
-        const something = new Something(7).do();
-        console.log('from jsCode: something.n = ' + something.n);
+            this.users = users;
+            this.messages = messages;
+        }
+    };
     
-        return [ Query, QueryGetUserByIdArgs, User ];
-    }
+    class ChatMessage {
+        __typename = 'ChatMessage';
+        id;
+        content;
+        time;
+        user;
+        constructor(id, content, time, user) {
+            this.id = id;
+            this.content = content;
+            this.time = time;
+            this.user = user;
+        }
+    };
+    
+    class QueryUserArgs {
+        id;
+        constructor(id) {
+            this.id = id;
+        }
+    };
+    
+    class QuerySearchArgs {
+        term;
+        constructor(term) {
+            this.term = term;
+        }
+    };
+    
+    const Role = {
+        User: 'USER',
+        Admin: 'ADMIN'
+    };
+        
+    class Query {
+        me;
+        user;
+        allUsers;
+        search;
+        myChats;
+        constructor(me, user, allUsers, search, myChats) {
+            this.me = me;
+            this.user = user;
+            this.allUsers = allUsers;
+            this.search = search;
+            this.myChats = myChats;
+        }
+    };
+    
+    return { User, Chat, ChatMessage, QueryUserArgs, QuerySearchArgs, Role, Query };
+}
 `;
 
 export type ResolverFn = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => any;
@@ -120,14 +165,16 @@ export class GqlSchemaParser {
         return this;
     }
 
-    setResolver(resolverName: string, fn: Function) {
-        this.resolvers[resolverName] = (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-            try {
-                return fn(parent, args, context, info);
-            }
-            catch (err) {
-                console.log(`ERROR in resolver \"${resolverName}\": ${err}`);
-                return null;
+    setResolvers(...arr: Array<{resolverName: string, fn: Function}>) {
+        for (let i = 0;  i < arr.length; i++) {
+            this.resolvers[arr[i].resolverName] = async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+                try {
+                    return await arr[i].fn(parent, args, context, info);
+                }
+                catch (err) {
+                    console.log(`ERROR in resolver \"${arr[i].resolverName}\": ${err}`);
+                    return null;
+                }
             }
         }
     }
