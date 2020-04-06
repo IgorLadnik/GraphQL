@@ -18,12 +18,6 @@ exports.jsCode = (workingDir) => {
         username;
         email;
         role;
-        constructor(id, username, email, role) {
-            this.id = id;
-            this.username = username;
-            this.email = email;
-            this.role = role;
-        }
     };
 
     class Chat {
@@ -31,11 +25,6 @@ exports.jsCode = (workingDir) => {
         id;
         users;
         messages;
-        constructor(id, users, messages) {
-            this.id = id;
-            this.users = users;
-            this.messages = messages;
-        }
     };
     
     class ChatMessage {
@@ -44,26 +33,15 @@ exports.jsCode = (workingDir) => {
         content;
         time;
         user;
-        constructor(id, content, time, user) {
-            this.id = id;
-            this.content = content;
-            this.time = time;
-            this.user = user;
         }
     };
     
     class QueryUserArgs {
         id;
-        constructor(id) {
-            this.id = id;
-        }
     };
     
     class QuerySearchArgs {
         term;
-        constructor(term) {
-            this.term = term;
-        }
     };
     
     const Role = {
@@ -77,13 +55,6 @@ exports.jsCode = (workingDir) => {
         allUsers;
         search;
         myChats;
-        constructor(me, user, allUsers, search, myChats) {
-            this.me = me;
-            this.user = user;
-            this.allUsers = allUsers;
-            this.search = search;
-            this.myChats = myChats;
-        }
     };
     
     return { User, Chat, ChatMessage, QueryUserArgs, QuerySearchArgs, Role, Query };
