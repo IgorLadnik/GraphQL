@@ -12,59 +12,64 @@ const Module = require('module');
 const jsFinalCode = `
 exports.jsCode = (workingDir) => {
    
-   class User {
-        __typename = 'User';
-        id;
+   class Node {
+     __typename;
+     id;
+     common;
+     constructor(typename, id, common) {
+        this.__typename = typename;
+        this.id = id;
+        this.common = common;
+     }
+   }
+   
+   class User extends Node {
         username;
         email;
         role;
         constructor(id, username, email, role) {
-            this.id = id;
+            super('User', id, '**');
             this.username = username;
             this.email = email;
             this.role = role;
         }
     };
 
-    class Chat {
-        __typename = 'Chat';
-        id;
+    class Chat extends Node {
         users;
         messages;
         constructor(id, users, messages) {
-            this.id = id;
+            super('Chat', id, '@@');
             this.users = users;
             this.messages = messages;
         }
     };
     
-    class ChatMessage {
-        __typename = 'ChatMessage';
-        id;
+    class ChatMessage extends Node {
         content;
         time;
         user;
         constructor(id, content, time, user) {
-            this.id = id;
+            super('ChatMessage', id, '##');
             this.content = content;
             this.time = time;
             this.user = user;
         }
     };
     
-    class QueryUserArgs {
-        id;
-        constructor(id) {
-            this.id = id;
-        }
-    };
-    
-    class QuerySearchArgs {
-        term;
-        constructor(term) {
-            this.term = term;
-        }
-    };
+    // class QueryUserArgs {
+    //     id;
+    //     constructor(id) {
+    //         this.id = id;
+    //     }
+    // };
+    //
+    // class QuerySearchArgs {
+    //     term;
+    //     constructor(term) {
+    //         this.term = term;
+    //     }
+    // };
     
     const Role = {
         User: 'USER',
@@ -86,7 +91,7 @@ exports.jsCode = (workingDir) => {
         }
     };
     
-    return { User, Chat, ChatMessage, QueryUserArgs, QuerySearchArgs, Role, Query };
+    return { User, Chat, ChatMessage, /*QueryUserArgs, QuerySearchArgs,*/ Role, Query };
 }
 `;
 

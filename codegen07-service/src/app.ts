@@ -28,12 +28,14 @@ enum Role {
 
 interface Node {
     id: ID!
+    common: String!
 }
 
 union SearchResult = User | Chat | ChatMessage
 
 type User implements Node {
     id: ID!
+    common: String!
     username: String!
     email: String!
     role: Role!
@@ -41,12 +43,14 @@ type User implements Node {
 
 type Chat implements Node {
     id: ID!
+    common: String!
     users: [User!]!
     messages: [ChatMessage!]!
 }
 
 type ChatMessage implements Node {
     id: ID!
+    common: String!
     content: String!
     time: Date!
     user: User!
@@ -138,6 +142,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
                 case 'users': collection = users; break;
                 case 'chats': collection = chats; break;
                 case 'chatmessages': collection = chatMessages;  break;
+                default: collection = _.flatten(_.concat(users, chats, chatMessages)); break;
             }
             return collection;
         }
@@ -150,6 +155,6 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
            return chats; //TEMP
         }
       },
-      //-------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------
     );
 }
