@@ -91,7 +91,7 @@ type ChatMessage implements Node {
     let address = `http://localhost:${port}/graphql`;
 
     try {
-        await listen(app, port);
+        await app.listen(port);
         console.log(`\n--- GraphQL is running on ${address}`);
 
         setResolversAfterStartListening(gqlSchemaParser, users, chats, chatMessages);
@@ -101,21 +101,17 @@ type ChatMessage implements Node {
     }
 })();
 
-async function listen(app: any, port: number) {
-  await app.listen(port);
-}
-
 function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
                                          users: Array<any>, chats: Array<any>, chatMessages: Array<any>) {
-    //const classes = gqlSchemaParser.generatedClasses;
-
     gqlSchemaParser.setResolvers(
+
       { resolverName: 'me',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
             console.log('resolver: me');
             return users[0];
         }
       },
+
       {
         resolverName: 'user',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -124,6 +120,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return users[parent.id];
         }
       },
+
       {
         resolverName: 'allUsers',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -131,6 +128,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return users;
         }
       },
+
       {
         resolverName: 'search',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -145,6 +143,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return collection;
         }
       },
+
       {
         resolverName: 'myChats',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -152,5 +151,6 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
            return chats; //TEMP
         }
       },
+
     );
 }

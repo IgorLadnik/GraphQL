@@ -33,7 +33,6 @@ exports.jsCode = (workingDir) => {
         content;
         time;
         user;
-        }
     };
     
     class QueryUserArgs {
