@@ -60,19 +60,19 @@ type ChatMessage implements Node {
 
     // Data ------------------------------------------------------------------------------------
     const users = [
-        classes.User = {id: 0, username: 'Julius Verne', email: 'jv@MysteriousIsland.com', role: classes.Role.Admin},
-        classes.User = {id: 1, username: 'Cyrus Smith', email: 'cs@MysteriousIsland.com', role: classes.Role.Admin},
-        classes.User = {id: 2, username: 'Gedeon Spilett', email: 'gs@MysteriousIsland.com', role: classes.Role.User},
+        new classes.User(0, 'Julius Verne', 'jv@MysteriousIsland.com', classes.Role.Admin),
+        new classes.User(1, 'Cyrus Smith', 'cs@MysteriousIsland.com', classes.Role.Admin),
+        new classes.User(2, 'Gedeon Spilett', 'gs@MysteriousIsland.com', classes.Role.User),
     ];
 
     const chatMessages = [
-        classes.ChatMessage = {id: 0, content: 'aaaaaaa', date: Date.parse('2020-04-05'), user: users[1]},
-        classes.ChatMessage = {id: 1, content: 'bbbbbbb', date: Date.parse('2020-04-05'), user: users[2]},
+        new classes.ChatMessage(0, 'aaaaaaa', Date.parse('2020-04-05'), users[1]),
+        new classes.ChatMessage(1, 'bbbbbbb', Date.parse('2020-04-05'), users[2]),
     ];
 
     const chats = [
-        classes.Chat = {id: 0, users: [users[0], users[2]], messages: [chatMessages[0], chatMessages[1]]},
-        classes.Chat = {id: 1, users: [users[1], users[0]], messages: [chatMessages[0], chatMessages[1]]},
+        new classes.Chat(0, [users[0], users[2]], [chatMessages[0], chatMessages[1]]),
+        new classes.Chat(1, [users[1], users[0]], [chatMessages[0], chatMessages[1]]),
     ];
     // -----------------------------------------------------------------------------------------
 
@@ -104,14 +104,14 @@ type ChatMessage implements Node {
 function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
                                          users: Array<any>, chats: Array<any>, chatMessages: Array<any>) {
     gqlSchemaParser.setResolvers(
-
+      //-------------------------------------------------------------------------------------------
       { resolverName: 'me',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
             console.log('resolver: me');
             return users[0];
         }
       },
-
+      //-------------------------------------------------------------------------------------------
       {
         resolverName: 'user',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -120,7 +120,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return users[parent.id];
         }
       },
-
+      //-------------------------------------------------------------------------------------------
       {
         resolverName: 'allUsers',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -128,12 +128,11 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return users;
         }
       },
-
+      //-------------------------------------------------------------------------------------------
       {
         resolverName: 'search',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
             console.log(`resolver: parent.id = ${parent.term}`);
-            //const typeName = new classes.SearchResult(parent.term).resolveType();
             let collection;
             switch (parent.term.toLowerCase()) {
                 case 'users': collection = users; break;
@@ -143,7 +142,7 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
             return collection;
         }
       },
-
+      //-------------------------------------------------------------------------------------------
       {
         resolverName: 'myChats',
         fn: (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
@@ -151,6 +150,6 @@ function setResolversAfterStartListening(gqlSchemaParser: GqlSchemaParser,
            return chats; //TEMP
         }
       },
-
+      //-------------------------------------------------------------------------------------------
     );
 }
